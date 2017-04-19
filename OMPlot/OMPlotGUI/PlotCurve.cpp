@@ -59,6 +59,7 @@ PlotCurve::PlotCurve(QString fileName, QString variableName, QString unit, QStri
   setLegendAttribute(QwtPlotCurve::LegendShowLine);
   setLegendIconSize(QSize(30, 30));
 #endif
+  mpPlotDirectPainter = new QwtPlotDirectPainter();
 }
 
 PlotCurve::~PlotCurve()

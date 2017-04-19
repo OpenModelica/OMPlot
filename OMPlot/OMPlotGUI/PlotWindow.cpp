@@ -41,9 +41,14 @@
 
 using namespace OMPlot;
 
-PlotWindow::PlotWindow(QStringList arguments, QWidget *parent)
-  : QMainWindow(parent)
+PlotWindow::PlotWindow(QStringList arguments, QWidget *parent, bool isInteractiveSimulation, QToolButton *pStartSimulation, QToolButton *pPauseSimulation, QToolButton *pRestartSimulation)
+  : QMainWindow(parent), mIsInteractiveSimulation(isInteractiveSimulation)
 {
+  if (isInteractiveSimulation) {
+    mpStartSimulationToolButton = pStartSimulation;
+    mpPauseSimulationToolButton = pPauseSimulation;
+    mpRestartSimulationToolButton = pRestartSimulation;
+  }
   /* set the widget background white. so that the plot is more useable in books and publications. */
   QPalette p(palette());
   p.setColor(QPalette::Background, Qt::white);
@@ -139,6 +144,11 @@ void PlotWindow::initializePlot(QStringList arguments)
     setPlotType(PlotWindow::PLOTPARAMETRIC);
     plotParametric();
   }
+  else if (plotType.toLower().compare("plotinteractive") == 0)
+  {
+    setPlotType(PlotWindow::PLOTINTERACTIVE);
+    plotInteractive();
+  }
 }
 
 void PlotWindow::setVariablesList(QStringList variables)
@@ -169,6 +179,41 @@ void PlotWindow::setupToolbar()
 {
   QToolBar *toolBar = new QToolBar(this);
   setContextMenuPolicy(Qt::NoContextMenu);
+  /* Interactive Simulation */
+  if (mIsInteractiveSimulation) {
+    /* Restart tool button */
+    mpRestartSimulationToolButton->setEnabled(false);
+    mpRestartSimulationToolButton->setText(tr("Restart"));
+    mpRestartSimulationToolButton->setIcon(QIcon( ":/Resources/icons/initialize.svg"));
+    mpRestartSimulationToolButton->setToolTip(tr("Restart"));
+    mpRestartSimulationToolButton->setAutoRaise(true);
+
+    /* Start tool button */
+    mpStartSimulationToolButton->setText(tr("Start"));
+    mpStartSimulationToolButton->setIcon(QIcon(":/Resources/icons/play_animation.svg"));
+    mpStartSimulationToolButton->setToolTip(tr("Start"));
+    mpStartSimulationToolButton->setAutoRaise(true);
+
+    /* Start tool button */
+    mpPauseSimulationToolButton->setEnabled(false);
+    mpPauseSimulationToolButton->setText(tr("Pause"));
+    mpPauseSimulationToolButton->setIcon(QIcon(":/Resources/icons/pause.svg"));
+    mpPauseSimulationToolButton->setToolTip(tr("Pause"));
+    mpPauseSimulationToolButton->setAutoRaise(true);
+
+    /* Control buttons frame */
+    QFrame *pControlButtonsFrame = new QFrame;
+    QHBoxLayout *pControlButtonsHorizontalLayout = new QHBoxLayout;
+    pControlButtonsHorizontalLayout->addWidget(mpRestartSimulationToolButton);
+    pControlButtonsHorizontalLayout->addWidget(mpStartSimulationToolButton);
+    pControlButtonsHorizontalLayout->addWidget(mpPauseSimulationToolButton);
+    pControlButtonsHorizontalLayout->setContentsMargins(0, 0, 0, 0);
+    pControlButtonsHorizontalLayout->setSpacing(0);
+
+    pControlButtonsFrame->setLayout(pControlButtonsHorizontalLayout);
+    toolBar->addWidget(pControlButtonsFrame);
+    toolBar->addSeparator();
+  }
   // Auto scale
   mpAutoScaleButton = new QToolButton(toolBar);
   mpAutoScaleButton->setText(tr("Auto Scale"));
@@ -663,9 +708,31 @@ void PlotWindow::plotParametric(PlotCurve *pPlotCurve)
   }
 }
 
+void PlotWindow::plotInteractive(PlotCurve *pPlotCurve, QwtSeriesData<QPointF> *pPlotCurveData)
+{
+  qDebug() << "Plot Interactive!";
+  mCurrentPlotIndex = 0;
+  pPlotCurve = new PlotCurve(".int", "variable name", getUnit(), getDisplayUnit(), mpPlot);
+  pPlotCurve->setSamples(pPlotCurveData);
+  pPlotCurve->getPlotDirectPainter()->drawSeries(pPlotCurve, -1, -1);
+  mpPlot->addPlotCurve(pPlotCurve);
+  pPlotCurve->attach(mpPlot);
+  mLastPlotIndex = pPlotCurveData->size();
+}
+
 void PlotWindow::setTitle(QString title)
 {
   mpPlot->setTitle(title);
+}
+
+void PlotWindow::updateCurves()
+{
+  qDebug() << mpPlot->getPlotCurvesList().size();
+  for (auto & p : mpPlot->getPlotCurvesList()) {
+    p->getPlotDirectPainter()->drawSeries(p, -1, -1);
+  }
+  mpPlot->replot();
+  mCurrentPlotIndex = mLastPlotIndex;
 }
 
 void PlotWindow::setGrid(QString grid)

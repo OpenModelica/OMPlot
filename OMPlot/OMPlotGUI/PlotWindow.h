@@ -43,6 +43,7 @@
 #include <qwt_plot_zoomer.h>
 #include <qwt_plot_panner.h>
 #include <qwt_scale_engine.h>
+#include <qwt_system_clock.h>
 #if QWT_VERSION >= 0x060000
 #include <qwt_compat.h>
 #endif
@@ -60,7 +61,7 @@ class PlotWindow : public QMainWindow
 {
   Q_OBJECT
 public:
-  enum PlotType {PLOT, PLOTALL, PLOTPARAMETRIC};
+  enum PlotType {PLOT, PLOTALL, PLOTPARAMETRIC, PLOTINTERACTIVE};
 private:
   Plot *mpPlot;
   QCheckBox *mpLogXCheckBox;
@@ -70,6 +71,9 @@ private:
   QToolButton *mpNoGridButton;
   QToolButton *mpAutoScaleButton;
   QToolButton *mpSetupButton;
+  QToolButton *mpRestartSimulationToolButton;
+  QToolButton *mpStartSimulationToolButton;
+  QToolButton *mpPauseSimulationToolButton;
   QTextStream *mpTextStream;
   QFile mFile;
   QStringList mVariablesList;
@@ -84,8 +88,14 @@ private:
   QString mYRangeMax;
   double mCurveWidth;
   int mCurveStyle;
+  bool mIsInteractiveSimulation;
+  QwtSystemClock mPlotClock;
+  int mPlotTimer;
+  int mCurrentPlotIndex;
+  int mLastPlotIndex;
 public:
-  PlotWindow(QStringList arguments = QStringList(), QWidget *parent = 0);
+  PlotWindow(QStringList arguments = QStringList(), QWidget *parent = 0, bool isInteractiveSimulation = false,
+             QToolButton *pStartSimulation = 0, QToolButton *pPauseSimulation = 0, QToolButton *pRestartSimulation = 0);
   ~PlotWindow();
 
   void setUpWidget();
@@ -97,6 +107,7 @@ public:
   void setupToolbar();
   void plot(PlotCurve *pPlotCurve = 0);
   void plotParametric(PlotCurve *pPlotCurve = 0);
+  void plotInteractive(PlotCurve *pPlotCurve = 0, QwtSeriesData<QPointF> *pPlotCurveData = 0);
   void setTitle(QString title);
   void setGrid(QString grid);
   QString getGrid();
@@ -129,6 +140,7 @@ public:
   Plot* getPlot();
   void receiveMessage(QStringList arguments);
   void closeEvent(QCloseEvent *event);
+  void updateCurves();
 signals:
   void closingDown();
 public slots:

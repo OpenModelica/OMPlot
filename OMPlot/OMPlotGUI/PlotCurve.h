@@ -35,6 +35,7 @@
 #define PLOTCURVE_H
 
 #include "OMPlot.h"
+#include <qwt_plot_directpainter.h>
 
 namespace OMPlot
 {
@@ -53,6 +54,7 @@ private:
   int mStyle;
 
   Plot *mpParentPlot;
+  QwtPlotDirectPainter *mpPlotDirectPainter;
 public:
   PlotCurve(QString fileName, QString variableName, QString unit, QString displayUnit, Plot *pParent);
   ~PlotCurve();
@@ -94,6 +96,7 @@ public:
   void setCustomColor(bool value);
   bool hasCustomColor();
   void setData(const double* xData, const double* yData, int size);
+  QwtPlotDirectPainter* getPlotDirectPainter() {return mpPlotDirectPainter;}
 #if QWT_VERSION < 0x060000
   virtual void updateLegend(QwtLegend *legend) const;
 #endif
