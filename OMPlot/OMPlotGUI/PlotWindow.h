@@ -107,7 +107,7 @@ public:
   void setupToolbar();
   void plot(PlotCurve *pPlotCurve = 0);
   void plotParametric(PlotCurve *pPlotCurve = 0);
-  void plotInteractive(PlotCurve *pPlotCurve = 0, QwtSeriesData<QPointF> *pPlotCurveData = 0);
+  void plotInteractive(PlotCurve *pPlotCurve = 0, QwtSeriesData<QPointF> *pPlotCurveData = 0, const QString &variableName = QString());
   void setTitle(QString title);
   void setGrid(QString grid);
   QString getGrid();
@@ -140,7 +140,7 @@ public:
   Plot* getPlot();
   void receiveMessage(QStringList arguments);
   void closeEvent(QCloseEvent *event);
-  void updateCurves();
+  void updateCurves(int currentIndex);
 signals:
   void closingDown();
 public slots:

@@ -708,15 +708,16 @@ void PlotWindow::plotParametric(PlotCurve *pPlotCurve)
   }
 }
 
-void PlotWindow::plotInteractive(PlotCurve *pPlotCurve, QwtSeriesData<QPointF> *pPlotCurveData)
+void PlotWindow::plotInteractive(PlotCurve *pPlotCurve, QwtSeriesData<QPointF> *pPlotCurveData, const QString &variableName)
 {
   qDebug() << "Plot Interactive!";
-  mCurrentPlotIndex = 0;
-  pPlotCurve = new PlotCurve(".int", "variable name", getUnit(), getDisplayUnit(), mpPlot);
+  pPlotCurve = new PlotCurve(".int", variableName, getUnit(), getDisplayUnit(), mpPlot);
   pPlotCurve->setSamples(pPlotCurveData);
-  pPlotCurve->getPlotDirectPainter()->drawSeries(pPlotCurve, -1, -1);
+
   mpPlot->addPlotCurve(pPlotCurve);
   pPlotCurve->attach(mpPlot);
+  mpPlot->replot();
+
   mLastPlotIndex = pPlotCurveData->size();
 }
 
@@ -725,14 +726,12 @@ void PlotWindow::setTitle(QString title)
   mpPlot->setTitle(title);
 }
 
-void PlotWindow::updateCurves()
+void PlotWindow::updateCurves(int currentIndex)
 {
-  qDebug() << mpPlot->getPlotCurvesList().size();
   for (auto & p : mpPlot->getPlotCurvesList()) {
-    p->getPlotDirectPainter()->drawSeries(p, -1, -1);
+    p->getPlotDirectPainter()->drawSeries(p, currentIndex - 1, -1);
   }
-  mpPlot->replot();
-  mCurrentPlotIndex = mLastPlotIndex;
+  //qDebug() << "Current index: " << currentIndex;
 }
 
 void PlotWindow::setGrid(QString grid)
