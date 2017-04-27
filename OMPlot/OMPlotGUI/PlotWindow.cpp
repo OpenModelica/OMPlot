@@ -708,17 +708,20 @@ void PlotWindow::plotParametric(PlotCurve *pPlotCurve)
   }
 }
 
-void PlotWindow::plotInteractive(PlotCurve *pPlotCurve, QwtSeriesData<QPointF> *pPlotCurveData, const QString &variableName)
+std::pair<QVector<double>*, QVector<double>*> PlotWindow::plotInteractive(PlotCurve *pPlotCurve, QwtSeriesData<QPointF>* pSeriesData, const QString &variableName)
 {
   qDebug() << "Plot Interactive!";
   pPlotCurve = new PlotCurve(".int", variableName, getUnit(), getDisplayUnit(), mpPlot);
-  pPlotCurve->setSamples(pPlotCurveData);
-
+  //pPlotCurve->setXAxisVector(xAxisVector);
+  //pPlotCurve->setYAxisVector(yAxisVector);
+  //qDebug() << "Pointer to X data: " << pPlotCurve->getXAxisVector() << " and pointer to Y data: " << pPlotCurve->getYAxisVector();
+  //pPlotCurve->setData(pPlotCurve->getXAxisVector(), pPlotCurve->getYAxisVector(), pPlotCurve->getSize());
+  //pPlotCurve->setData(pPlotCurve->getAxisVectors().first->data(), pPlotCurve->getAxisVectors().second->data(), pPlotCurve->getSize());
+  pPlotCurve->setSamples(pSeriesData);
   mpPlot->addPlotCurve(pPlotCurve);
   pPlotCurve->attach(mpPlot);
   mpPlot->replot();
-
-  mLastPlotIndex = pPlotCurveData->size();
+  return pPlotCurve->getAxisVectors();
 }
 
 void PlotWindow::setTitle(QString title)
@@ -729,9 +732,9 @@ void PlotWindow::setTitle(QString title)
 void PlotWindow::updateCurves(int currentIndex)
 {
   for (auto & p : mpPlot->getPlotCurvesList()) {
-    p->getPlotDirectPainter()->drawSeries(p, currentIndex - 1, -1);
+    // append the last point to the plotting curve
+    p->getPlotDirectPainter()->drawSeries(p, p->getSize() - 2, -1);
   }
-  //qDebug() << "Current index: " << currentIndex;
 }
 
 void PlotWindow::setGrid(QString grid)

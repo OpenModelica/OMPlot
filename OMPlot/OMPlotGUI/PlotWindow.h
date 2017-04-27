@@ -92,7 +92,6 @@ private:
   QwtSystemClock mPlotClock;
   int mPlotTimer;
   int mCurrentPlotIndex;
-  int mLastPlotIndex;
 public:
   PlotWindow(QStringList arguments = QStringList(), QWidget *parent = 0, bool isInteractiveSimulation = false,
              QToolButton *pStartSimulation = 0, QToolButton *pPauseSimulation = 0, QToolButton *pRestartSimulation = 0);
@@ -107,7 +106,7 @@ public:
   void setupToolbar();
   void plot(PlotCurve *pPlotCurve = 0);
   void plotParametric(PlotCurve *pPlotCurve = 0);
-  void plotInteractive(PlotCurve *pPlotCurve = 0, QwtSeriesData<QPointF> *pPlotCurveData = 0, const QString &variableName = QString());
+  std::pair<QVector<double>*, QVector<double>*> plotInteractive(PlotCurve *pPlotCurve = 0, QwtSeriesData<QPointF> *pSeriesData = 0, const QString &variableName = QString());
   void setTitle(QString title);
   void setGrid(QString grid);
   QString getGrid();

@@ -184,6 +184,7 @@ QColor Plot::getUniqueColor(int index, int total)
 // just overloaded this function to get colors for curves.
 void Plot::replot()
 {
+  qDebug() << "Reploting!";
   for (int i = 0 ; i < mPlotCurvesList.length() ; i++)
   {
     // if user has set the custom color for the curve then dont get automatic color for it

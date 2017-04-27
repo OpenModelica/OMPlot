@@ -145,6 +145,11 @@ const double* PlotCurve::getXAxisVector() const
   return mXAxisVector.data();
 }
 
+std::pair<QVector<double>*, QVector<double>*> PlotCurve::getAxisVectors()
+{
+  return std::make_pair(&mXAxisVector, &mYAxisVector);
+}
+
 void PlotCurve::setYAxisVector(QVector<double> vector)
 {
   mYAxisVector = vector;
