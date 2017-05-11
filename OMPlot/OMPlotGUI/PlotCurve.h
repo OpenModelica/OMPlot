@@ -77,7 +77,7 @@ public:
   void addXAxisValue(double value);
   void updateXAxisValue(int index, double value);
   const double* getXAxisVector() const;
-  std::pair<QVector<double>*, QVector<double>*> getAxisVectors();
+  QPair<QVector<double>*, QVector<double>*> getAxisVectors();
   void clearXAxisVector() {mXAxisVector.clear();}
   void setYAxisVector(QVector<double> vector);
   void addYAxisValue(double value);

@@ -41,13 +41,14 @@
 
 using namespace OMPlot;
 
-PlotWindow::PlotWindow(QStringList arguments, QWidget *parent, bool isInteractiveSimulation, QToolButton *pStartSimulation, QToolButton *pPauseSimulation, QToolButton *pRestartSimulation)
+PlotWindow::PlotWindow(QStringList arguments, QWidget *parent, bool isInteractiveSimulation, QToolButton *pStartSimulation,
+                       QToolButton *pPauseSimulation, QComboBox *pSimulationSpeed)
   : QMainWindow(parent), mIsInteractiveSimulation(isInteractiveSimulation)
 {
   if (isInteractiveSimulation) {
     mpStartSimulationToolButton = pStartSimulation;
     mpPauseSimulationToolButton = pPauseSimulation;
-    mpRestartSimulationToolButton = pRestartSimulation;
+    mpSimulationSpeedComboBox = pSimulationSpeed;
   }
   /* set the widget background white. so that the plot is more useable in books and publications. */
   QPalette p(palette());
@@ -179,39 +180,36 @@ void PlotWindow::setupToolbar()
 {
   QToolBar *toolBar = new QToolBar(this);
   setContextMenuPolicy(Qt::NoContextMenu);
-  /* Interactive Simulation */
+  // Interactive Simulation
   if (mIsInteractiveSimulation) {
-    /* Restart tool button */
-    mpRestartSimulationToolButton->setEnabled(false);
-    mpRestartSimulationToolButton->setText(tr("Restart"));
-    mpRestartSimulationToolButton->setIcon(QIcon( ":/Resources/icons/initialize.svg"));
-    mpRestartSimulationToolButton->setToolTip(tr("Restart"));
-    mpRestartSimulationToolButton->setAutoRaise(true);
-
-    /* Start tool button */
+    //start tool button
     mpStartSimulationToolButton->setText(tr("Start"));
     mpStartSimulationToolButton->setIcon(QIcon(":/Resources/icons/play_animation.svg"));
     mpStartSimulationToolButton->setToolTip(tr("Start"));
     mpStartSimulationToolButton->setAutoRaise(true);
-
-    /* Start tool button */
+    // start tool button
     mpPauseSimulationToolButton->setEnabled(false);
     mpPauseSimulationToolButton->setText(tr("Pause"));
     mpPauseSimulationToolButton->setIcon(QIcon(":/Resources/icons/pause.svg"));
     mpPauseSimulationToolButton->setToolTip(tr("Pause"));
     mpPauseSimulationToolButton->setAutoRaise(true);
-
-    /* Control buttons frame */
-    QFrame *pControlButtonsFrame = new QFrame;
-    QHBoxLayout *pControlButtonsHorizontalLayout = new QHBoxLayout;
-    pControlButtonsHorizontalLayout->addWidget(mpRestartSimulationToolButton);
-    pControlButtonsHorizontalLayout->addWidget(mpStartSimulationToolButton);
-    pControlButtonsHorizontalLayout->addWidget(mpPauseSimulationToolButton);
-    pControlButtonsHorizontalLayout->setContentsMargins(0, 0, 0, 0);
-    pControlButtonsHorizontalLayout->setSpacing(0);
-
-    pControlButtonsFrame->setLayout(pControlButtonsHorizontalLayout);
-    toolBar->addWidget(pControlButtonsFrame);
+    /* Speed label and combo box */
+    mpSimulationSpeedLabel = new QLabel(tr("Speed:"));
+    QDoubleValidator *pDoubleValidator = new QDoubleValidator(this);
+    pDoubleValidator->setBottom(0.01);
+    pDoubleValidator->setTop(100);
+    mpSimulationSpeedComboBox->setEditable(true);
+    mpSimulationSpeedComboBox->addItems(QStringList() << "10" << "5" << "2" << "1" << "0.5" << "0.2" << "0.1");
+    mpSimulationSpeedComboBox->setCurrentIndex(3);
+    mpSimulationSpeedComboBox->setCompleter(0);
+    mpSimulationSpeedComboBox->setValidator(pDoubleValidator);
+    // add the interactive controls
+    toolBar->addWidget(mpStartSimulationToolButton);
+    toolBar->addSeparator();
+    toolBar->addWidget(mpPauseSimulationToolButton);
+    toolBar->addSeparator();
+    toolBar->addWidget(mpSimulationSpeedLabel);
+    toolBar->addWidget(mpSimulationSpeedComboBox);
     toolBar->addSeparator();
   }
   // Auto scale
@@ -708,20 +706,35 @@ void PlotWindow::plotParametric(PlotCurve *pPlotCurve)
   }
 }
 
-std::pair<QVector<double>*, QVector<double>*> PlotWindow::plotInteractive(PlotCurve *pPlotCurve, QwtSeriesData<QPointF>* pSeriesData, const QString &variableName)
+QPair<QVector<double>*, QVector<double>*> PlotWindow::plotInteractive(PlotCurve *pPlotCurve)
 {
-  qDebug() << "Plot Interactive!";
-  pPlotCurve = new PlotCurve(".int", variableName, getUnit(), getDisplayUnit(), mpPlot);
-  //pPlotCurve->setXAxisVector(xAxisVector);
-  //pPlotCurve->setYAxisVector(yAxisVector);
-  //qDebug() << "Pointer to X data: " << pPlotCurve->getXAxisVector() << " and pointer to Y data: " << pPlotCurve->getYAxisVector();
-  //pPlotCurve->setData(pPlotCurve->getXAxisVector(), pPlotCurve->getYAxisVector(), pPlotCurve->getSize());
-  //pPlotCurve->setData(pPlotCurve->getAxisVectors().first->data(), pPlotCurve->getAxisVectors().second->data(), pPlotCurve->getSize());
-  pPlotCurve->setSamples(pSeriesData);
+  if (mVariablesList.isEmpty() && getPlotType() == PlotWindow::PLOTINTERACTIVE) {
+    throw NoVariableException(QString(tr("No variables specified!")).toStdString().c_str());
+  } else if (mVariablesList.size() != 1) {
+    throw NoVariableException(QString(tr("Could not determine variable name!")).toStdString().c_str());
+  }
+  QString variableName = mVariablesList.at(0);
+  pPlotCurve = new PlotCurve(mInteractiveModelName, variableName, getUnit(), getDisplayUnit(), mpPlot);
+  pPlotCurve->setSamples(mpInteractiveData);
   mpPlot->addPlotCurve(pPlotCurve);
   pPlotCurve->attach(mpPlot);
   mpPlot->replot();
   return pPlotCurve->getAxisVectors();
+}
+
+void PlotWindow::setInteractiveOwner(const QString &interactiveTreeItemOwner)
+{
+  mInteractiveTreeItemOwner = interactiveTreeItemOwner;
+}
+
+void PlotWindow::setInteractivePlotData(QwtSeriesData<QPointF>* pInteractiveData)
+{
+  mpInteractiveData = pInteractiveData;
+}
+
+void PlotWindow::setInteractiveModelName(const QString &modelName)
+{
+  mInteractiveModelName = modelName;
 }
 
 void PlotWindow::setTitle(QString title)
@@ -729,13 +742,22 @@ void PlotWindow::setTitle(QString title)
   mpPlot->setTitle(title);
 }
 
-void PlotWindow::updateCurves(int currentIndex)
+void PlotWindow::updateCurves()
 {
   for (auto & p : mpPlot->getPlotCurvesList()) {
     // append the last point to the plotting curve
     p->getPlotDirectPainter()->drawSeries(p, p->getSize() - 2, -1);
   }
 }
+
+void PlotWindow::updateYAxis(QPair<double, double> minMaxValues)
+{
+  // replot of some value is out of bounds
+  if (minMaxValues.first < mpPlot->axisScaleDiv(QwtPlot::yLeft).lowerBound() || minMaxValues.second > mpPlot->axisScaleDiv(QwtPlot::yLeft).upperBound()) {
+    mpPlot->replot();
+  }
+}
+
 
 void PlotWindow::setGrid(QString grid)
 {

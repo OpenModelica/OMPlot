@@ -43,7 +43,6 @@
 #include <qwt_plot_zoomer.h>
 #include <qwt_plot_panner.h>
 #include <qwt_scale_engine.h>
-#include <qwt_system_clock.h>
 #if QWT_VERSION >= 0x060000
 #include <qwt_compat.h>
 #endif
@@ -71,9 +70,10 @@ private:
   QToolButton *mpNoGridButton;
   QToolButton *mpAutoScaleButton;
   QToolButton *mpSetupButton;
-  QToolButton *mpRestartSimulationToolButton;
   QToolButton *mpStartSimulationToolButton;
   QToolButton *mpPauseSimulationToolButton;
+  QLabel *mpSimulationSpeedLabel;
+  QComboBox *mpSimulationSpeedComboBox;
   QTextStream *mpTextStream;
   QFile mFile;
   QStringList mVariablesList;
@@ -89,12 +89,12 @@ private:
   double mCurveWidth;
   int mCurveStyle;
   bool mIsInteractiveSimulation;
-  QwtSystemClock mPlotClock;
-  int mPlotTimer;
-  int mCurrentPlotIndex;
+  QString mInteractiveTreeItemOwner;
+  QwtSeriesData<QPointF>* mpInteractiveData;
+  QString mInteractiveModelName;
 public:
   PlotWindow(QStringList arguments = QStringList(), QWidget *parent = 0, bool isInteractiveSimulation = false,
-             QToolButton *pStartSimulation = 0, QToolButton *pPauseSimulation = 0, QToolButton *pRestartSimulation = 0);
+             QToolButton *pStartSimulation = 0, QToolButton *pPauseSimulation = 0, QComboBox *pSimulationSpeed = 0);
   ~PlotWindow();
 
   void setUpWidget();
@@ -106,7 +106,11 @@ public:
   void setupToolbar();
   void plot(PlotCurve *pPlotCurve = 0);
   void plotParametric(PlotCurve *pPlotCurve = 0);
-  std::pair<QVector<double>*, QVector<double>*> plotInteractive(PlotCurve *pPlotCurve = 0, QwtSeriesData<QPointF> *pSeriesData = 0, const QString &variableName = QString());
+  QPair<QVector<double>*, QVector<double>*> plotInteractive(PlotCurve *pPlotCurve = 0);
+  void setInteractiveOwner(const QString &interactiveTreeItemOwner);
+  void setInteractivePlotData(QwtSeriesData<QPointF>* pInteractiveData);
+  void setInteractiveModelName(const QString &modelName);
+  QString getInteractiveOwner() {return mInteractiveTreeItemOwner;}
   void setTitle(QString title);
   void setGrid(QString grid);
   QString getGrid();
@@ -139,7 +143,8 @@ public:
   Plot* getPlot();
   void receiveMessage(QStringList arguments);
   void closeEvent(QCloseEvent *event);
-  void updateCurves(int currentIndex);
+  void updateCurves();
+  void updateYAxis(QPair<double, double> minMaxValues);
 signals:
   void closingDown();
 public slots:
