@@ -715,6 +715,9 @@ QPair<QVector<double>*, QVector<double>*> PlotWindow::plotInteractive(PlotCurve 
   }
   QString variableName = mVariablesList.at(0);
   pPlotCurve = new PlotCurve(mInteractiveModelName, variableName, getUnit(), getDisplayUnit(), mpPlot);
+  // clear previous curve data
+  pPlotCurve->clearXAxisVector();
+  pPlotCurve->clearYAxisVector();
   pPlotCurve->setSamples(mpInteractiveData);
   mpPlot->addPlotCurve(pPlotCurve);
   pPlotCurve->attach(mpPlot);

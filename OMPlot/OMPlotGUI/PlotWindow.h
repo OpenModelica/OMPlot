@@ -92,6 +92,7 @@ private:
   QString mInteractiveTreeItemOwner;
   QwtSeriesData<QPointF>* mpInteractiveData;
   QString mInteractiveModelName;
+  QMdiSubWindow *mpSubWindow;
 public:
   PlotWindow(QStringList arguments = QStringList(), QWidget *parent = 0, bool isInteractiveSimulation = false,
              QToolButton *pStartSimulation = 0, QToolButton *pPauseSimulation = 0, QComboBox *pSimulationSpeed = 0);
@@ -109,6 +110,9 @@ public:
   QPair<QVector<double>*, QVector<double>*> plotInteractive(PlotCurve *pPlotCurve = 0);
   void setInteractiveOwner(const QString &interactiveTreeItemOwner);
   void setInteractivePlotData(QwtSeriesData<QPointF>* pInteractiveData);
+  void setSubWindow(QMdiSubWindow *pSubWindow) {mpSubWindow = pSubWindow;}
+  QMdiSubWindow* getSubWindow() {return mpSubWindow;}
+  /* FIX: This is probably not used */
   void setInteractiveModelName(const QString &modelName);
   QString getInteractiveOwner() {return mInteractiveTreeItemOwner;}
   void setTitle(QString title);
