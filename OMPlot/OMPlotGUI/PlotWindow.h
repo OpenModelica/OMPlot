@@ -90,6 +90,7 @@ private:
   int mCurveStyle;
   bool mIsInteractiveSimulation;
   QString mInteractiveTreeItemOwner;
+  int mInteractivePort;
   QwtSeriesData<QPointF>* mpInteractiveData;
   QString mInteractiveModelName;
   QMdiSubWindow *mpSubWindow;
@@ -109,12 +110,13 @@ public:
   void plotParametric(PlotCurve *pPlotCurve = 0);
   QPair<QVector<double>*, QVector<double>*> plotInteractive(PlotCurve *pPlotCurve = 0);
   void setInteractiveOwner(const QString &interactiveTreeItemOwner);
+  void setInteractivePort(const int port);
   void setInteractivePlotData(QwtSeriesData<QPointF>* pInteractiveData);
   void setSubWindow(QMdiSubWindow *pSubWindow) {mpSubWindow = pSubWindow;}
   QMdiSubWindow* getSubWindow() {return mpSubWindow;}
-  /* FIX: This is probably not used */
   void setInteractiveModelName(const QString &modelName);
   QString getInteractiveOwner() {return mInteractiveTreeItemOwner;}
+  int getInteractivePort() {return mInteractivePort;}
   void setTitle(QString title);
   void setGrid(QString grid);
   QString getGrid();

@@ -711,7 +711,7 @@ QPair<QVector<double>*, QVector<double>*> PlotWindow::plotInteractive(PlotCurve 
   if (mVariablesList.isEmpty() && getPlotType() == PlotWindow::PLOTINTERACTIVE) {
     throw NoVariableException(QString(tr("No variables specified!")).toStdString().c_str());
   } else if (mVariablesList.size() != 1) {
-    throw NoVariableException(QString(tr("Could not determine variable name!")).toStdString().c_str());
+    throw NoVariableException(QString(tr("Could not determine the variable name!")).toStdString().c_str());
   }
   QString variableName = mVariablesList.at(0);
   pPlotCurve = new PlotCurve(mInteractiveModelName, variableName, getUnit(), getDisplayUnit(), mpPlot);
@@ -728,6 +728,11 @@ QPair<QVector<double>*, QVector<double>*> PlotWindow::plotInteractive(PlotCurve 
 void PlotWindow::setInteractiveOwner(const QString &interactiveTreeItemOwner)
 {
   mInteractiveTreeItemOwner = interactiveTreeItemOwner;
+}
+
+void PlotWindow::setInteractivePort(const int port)
+{
+  mInteractivePort = port;
 }
 
 void PlotWindow::setInteractivePlotData(QwtSeriesData<QPointF>* pInteractiveData)
@@ -755,7 +760,7 @@ void PlotWindow::updateCurves()
 
 void PlotWindow::updateYAxis(QPair<double, double> minMaxValues)
 {
-  // replot of some value is out of bounds
+  // replot if a value is out of bounds
   if (minMaxValues.first < mpPlot->axisScaleDiv(QwtPlot::yLeft).lowerBound() || minMaxValues.second > mpPlot->axisScaleDiv(QwtPlot::yLeft).upperBound()) {
     mpPlot->replot();
   }
