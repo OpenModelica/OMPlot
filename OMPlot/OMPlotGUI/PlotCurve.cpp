@@ -59,6 +59,7 @@ PlotCurve::PlotCurve(QString fileName, QString variableName, QString unit, QStri
   setLegendAttribute(QwtPlotCurve::LegendShowLine);
   setLegendIconSize(QSize(30, 30));
 #endif
+  mpPlotDirectPainter = new QwtPlotDirectPainter();
 }
 
 PlotCurve::~PlotCurve()
@@ -142,6 +143,11 @@ void PlotCurve::updateXAxisValue(int index, double value)
 const double* PlotCurve::getXAxisVector() const
 {
   return mXAxisVector.data();
+}
+
+QPair<QVector<double>*, QVector<double>*> PlotCurve::getAxisVectors()
+{
+  return qMakePair(&mXAxisVector, &mYAxisVector);
 }
 
 void PlotCurve::setYAxisVector(QVector<double> vector)
